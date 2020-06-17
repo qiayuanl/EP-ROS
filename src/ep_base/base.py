@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import math
 import rospkg
 import signal
-import time
 
 import rospy
 import tf
@@ -38,14 +37,13 @@ class EpNode:
         # ROS pub/sub
         self.image_pub = rospy.Publisher("/ep_image", Image, queue_size=10)
         self.camInfo_pub = rospy.Publisher("/ep_camInfo", CameraInfo, queue_size=10, latch=True)
-        self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback)
+        self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback, queue_size=1)
         self.br = tf.TransformBroadcaster()
         self.bridge = CvBridge()
         self.make_camera_info()
 
         self.robot.camera.observe(self.image_cb, 'image')
         self.robot.chassis.observe(self.chassis_cb, 'subscribe_data')
-        time.sleep(1)
 
     # Camera Info Setup
     def make_camera_info(self):
@@ -96,7 +94,6 @@ class EpNode:
         w1 = (x + y - yaw * (a + b)) * (30 / pi) / r
         w2 = (x - y - yaw * (a + b)) * (30 / pi) / r
         w3 = (x + y + yaw * (a + b)) * (30 / pi) / r
-        # print "wheel speed: ", w0, w1, w2, w3
         self.robot.connection.command('chassis wheel w1 %f w2 %f w3 %f w4 %f' % (w0, w1, w2, w3))
 
     def cmd_vel_callback(self, msg):
@@ -104,7 +101,9 @@ class EpNode:
 
 
 def ep_exit(signum, frame):
-    EpNode.is_alive = False
+    ep_node.is_alive = False
+    ep_node.robot.camera.unobserve(ep_node.image_cb, 'image')
+    ep_node.robot.chassis.unobserve(ep_node.chassis_cb, 'subscribe_data')
 
 
 if __name__ == '__main__':

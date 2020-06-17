@@ -1,0 +1,7 @@
+<launch>
+    <!-- Run the ep_base nodes -->
+    <node pkg = "ep_base" type="base.py" name="ep_base" output="screen" />
+    <param name="ep_ip" type="str" value="192.168.0.135" />
+    <param name="chassis_freq" type="int" value="50" />
+
+</launch>

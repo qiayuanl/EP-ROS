@@ -1,62 +1,8 @@
 <launch>
-    <node pkg = "ep_base" type="base.py" name="ep_base" output="screen" />
+    <!-- Run the ep_base nodes -->
+    <include file="$(find ep_bringup)/launch/ep_base.launch" />
 
-    <!-- Run the map server -->
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find ep_bringup)/map/winter_camp.yaml" respawn="false" />
+<!--      --><!-- Run the map -->
+<!--     <include file="$(find ep_bringup)/launch/map.launch" /> -->
 
-    <!-- Run the static TF publisher from map to tags -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_1" args="0.0 -0.0 0.0 0 0.0 0.0 map tag_1" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_2" args="0.8 -0.0 0.0 0 0.0 0.0 map tag_2" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_3" args="1.6 -0.0 0.0 0 0.0 0.0 map tag_3" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_4" args="2.4 -0.0 0.0 0 0.0 0.0 map tag_4" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_5" args="3.2 -0.0 0.0 0 0.0 0.0 map tag_5" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_6" args="4.0 -0.0 0.0 0.0 0.0 0.0 map tag_6" />
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_7" args="0.0 -0.8 0.0 0.0 0.0 0.0 map tag_7" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_8" args="0.8 -0.8 0.0 0.0 0.0 0.0 map tag_8" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_9" args="1.6 -0.8 0.0 0.0 0.0 0.0 map tag_9" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_10" args="2.4 -0.8 0.0 0.0 0.0 0.0 map tag_10" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_11" args="3.2 -0.8 0.0 0.0 0.0 0.0 map tag_11" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_12" args="4.0 -.8 0.0 0.0 0.0 0.0 map tag_12" />
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_13" args="0.0 -1.6 0.0 0.0 0.0 0.0 map tag_13" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_14" args="0.8 -1.6 0.0 0.0 0.0 0.0 map tag_14" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_15" args="1.6 -1.6 0.0 0.0 0.0 0.0 map tag_15" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_16" args="2.4 -1.6 0.0 0.0 0.0 0.0 map tag_16" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_17" args="3.2 -1.6 0.0 0.0 0.0 0.0 map tag_17" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_18" args="4.0 -1.6 0.0 0.0 0.0 0.0 map tag_18" />
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_19" args="0.0 -2.4 0.0 0.0 0.0 0.0 map tag_19" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_20" args="0.8 -2.4 0.0 0.0 0.0 0.0 map tag_20" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_21" args="1.6 -2.4 0.0 0.0 0.0 0.0 map tag_21" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_22" args="2.4 -2.4 0.0 0.0 0.0 0.0 map tag_22" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_23" args="3.2 -2.4 0.0 0.0 0.0 0.0 map tag_23" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_24" args="4.0 -2.4 0.0 0.0 0.0 0.0 map tag_24" />
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_25" args="0.0 -3.2 0.0 0.0 0.0 0.0 map tag_25" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_26" args="0.8 -3.2 0.0 0.0 0.0 0.0 map tag_26" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_27" args="1.6 -3.2 0.0 0.0 0.0 0.0 map tag_27" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_28" args="2.4 -3.2 0.0 0.0 0.0 0.0 map tag_28" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_29" args="3.2 -3.2 0.0 0.0 0.0 0.0 map tag_29" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_30" args="4.0 -3.2 0.0 0.0 0.0 0.0 map tag_30" />
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_31" args="0.0 -4.0 0.0 0.0 0.0 0.0 map tag_31" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_32" args="0.8 -4.0 0.0 0.0 0.0 0.0 map tag_32" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_33" args="1.6 -4.0 0.0 0.0 0.0 0.0 map tag_33" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_34" args="2.4 -4.0 0.0 0.0 0.0 0.0 map tag_34" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_35" args="3.2 -4.0 0.0 0.0 0.0 0.0 map tag_35" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_36" args="4.0 -4.0 0.0 0.0 0.0 0.0 map tag_36" />
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_37" args="0.0 -4.8 0.0 0.0 0.0 0.0 map tag_37" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_38" args="0.8 -4.8 0.0 0.0 0.0 0.0 map tag_38" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_39" args="1.6 -4.8 0.0 0.0 0.0 0.0 map tag_39" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_40" args="2.4 -4.8 0.0 0.0 0.0 0.0 map tag_40" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_41" args="3.2 -4.8 0.0 0.0 0.0 0.0 map tag_41" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_42" args="4.0 -4.8 0.0 0.0 0.0 0.0 map tag_42" />
-
-    <!-- Run the static TF publisher from base to cam -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="base_cam" args="0.135 0.0 0.110 -1.571 0.0 -1.815 base_link s1_camera_frame" />
-
-    <!-- Run the tag detecting nodes -->
-    <include file="$(find ep_bringup)/launch/detecting.launch" />
 </launch>

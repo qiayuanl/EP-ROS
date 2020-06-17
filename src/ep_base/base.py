@@ -4,7 +4,6 @@ from __future__ import absolute_import
 
 import math
 import rospkg
-import signal
 
 import rospy
 import tf
@@ -23,15 +22,17 @@ from robomaster.module import RobotModeType
 
 class EpNode:
     def __init__(self):
+        # ROS Param
+        ip = rospy.get_param('ep_ip', '192.168.0.135')
+        freq = rospy.get_param('chassis_freq', 50)
         # Robot hardware
-        self.robot = Robot(connection_type=ConnectionType.WIFI_NETWORKING, robot_ip='192.168.0.135')
+        self.robot = Robot(connection_type=ConnectionType.WIFI_NETWORKING, robot_ip=ip)
         self.robot.status.mode = RobotModeType.FREE
         self.robot.camera.open(height=360, width=640)
         self.robot.chassis.subscribe_open([RobotChassisPushAttrType.ATTITUDE, RobotChassisPushAttrType.POSITION],
-            [50, 50])
+            [freq, freq])
         self.robot.led.color = (0, 0, 0)
-        self.robot.arm.y = 80
-        self.robot.arm.x = 180
+        self.robot.arm.reset()
         self.robot.gripper.open = True
 
         # ROS pub/sub
@@ -100,7 +101,7 @@ class EpNode:
         self.move_with_wheel_speed(msg.linear.x, msg.linear.y, -msg.angular.z * 57.29578)
 
 
-def ep_exit(signum, frame):
+def ep_exit():
     ep_node.is_alive = False
     ep_node.robot.camera.unobserve(ep_node.image_cb, 'image')
     ep_node.robot.chassis.unobserve(ep_node.chassis_cb, 'subscribe_data')
@@ -109,7 +110,8 @@ def ep_exit(signum, frame):
 if __name__ == '__main__':
     rospy.init_node('ep_base', anonymous=True)
     ep_node = EpNode()
-    signal.signal(signal.SIGINT, ep_exit)
-    signal.signal(signal.SIGTERM, ep_exit)
+    # signal.signal(signal.SIGINT, ep_exit)
+    # signal.signal(signal.SIGTERM, ep_exit)
     rospy.spin()
+    ep_exit()
     ep_node.robot.close()

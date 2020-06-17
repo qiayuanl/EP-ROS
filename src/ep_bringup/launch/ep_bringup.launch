@@ -4,9 +4,6 @@
     <!-- Run the map server -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(find ep_bringup)/map/winter_camp.yaml" respawn="false" />
 
-    <!-- Run the joy node -->
-    <node pkg = "joy" type="joy_node" name="joy_node"/>
-
     <!-- Run the static TF publisher from map to tags -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_1" args="0.0 -0.0 0.0 0 0.0 0.0 map tag_1" />
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_tag_2" args="0.8 -0.0 0.0 0 0.0 0.0 map tag_2" />

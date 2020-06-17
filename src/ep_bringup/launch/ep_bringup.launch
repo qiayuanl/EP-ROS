@@ -4,5 +4,6 @@
 
 <!--      --><!-- Run the map -->
 <!--     <include file="$(find ep_bringup)/launch/map.launch" /> -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="test" args="0.0 -0.0 0.0 0 0.0 0.0 map odom" />
 
 </launch>

@@ -4,6 +4,8 @@ from __future__ import absolute_import
 
 import math
 import rospkg
+import threading
+import time
 
 import rospy
 import tf
@@ -23,14 +25,16 @@ from robomaster.module import RobotModeType
 class EpNode:
     def __init__(self):
         # ROS Param
+        self.is_alive = True
         ip = rospy.get_param('ep_ip', '192.168.0.135')
-        freq = rospy.get_param('chassis_freq', 50)
+        chassis_freq = rospy.get_param('chassis_freq', 50)
+        gripper_freq = rospy.get_param('gripper_freq', 5)
         # Robot hardware
         self.robot = Robot(connection_type=ConnectionType.WIFI_NETWORKING, robot_ip=ip)
         self.robot.status.mode = RobotModeType.FREE
         self.robot.camera.open(height=360, width=640)
         self.robot.chassis.subscribe_open([RobotChassisPushAttrType.ATTITUDE, RobotChassisPushAttrType.POSITION],
-            [freq, freq])
+            [chassis_freq, chassis_freq])
         self.robot.led.color = (0, 0, 0)
         self.robot.arm.reset()
         self.robot.gripper.open = True
@@ -38,10 +42,14 @@ class EpNode:
         # ROS pub/sub
         self.image_pub = rospy.Publisher("/ep_image", Image, queue_size=10)
         self.camInfo_pub = rospy.Publisher("/ep_camInfo", CameraInfo, queue_size=10, latch=True)
-        self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback, queue_size=1)
+        self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb, queue_size=1)
+        # self.cmd_grip_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_grip_cb, queue_size=1)
         self.br = tf.TransformBroadcaster()
         self.bridge = CvBridge()
         self.make_camera_info()
+
+        self.grip_pub_thread = threading.Thread(target=self.grip_cb)
+        self.grip_pub_thread.start()
 
         self.robot.camera.observe(self.image_cb, 'image')
         self.robot.chassis.observe(self.chassis_cb, 'subscribe_data')
@@ -97,8 +105,20 @@ class EpNode:
         w3 = (x + y + yaw * (a + b)) * (30 / pi) / r
         self.robot.connection.command('chassis wheel w1 %f w2 %f w3 %f w4 %f' % (w0, w1, w2, w3))
 
-    def cmd_vel_callback(self, msg):
+    def cmd_vel_cb(self, msg):
         self.move_with_wheel_speed(msg.linear.x, msg.linear.y, -msg.angular.z * 57.29578)
+
+    def grip_cb(self):
+        while self.is_alive:
+            ret, now_pos = self.robot.connection.command(u'robotic_arm position ?')
+            x = float(now_pos.split(u' ')[0]) / 1000
+            z = float(now_pos.split(u' ')[1]) / 1000
+            self.br.sendTransform((x, 0, z),
+                tf.transformations.quaternion_from_euler(0, 0, 0),
+                rospy.Time.now(),
+                "gripper", "base_link")
+            time.sleep(0.1)
+        print('gripper publish threading exit')
 
 
 def ep_exit():

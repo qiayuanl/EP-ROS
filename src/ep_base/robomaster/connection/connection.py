@@ -75,8 +75,7 @@ class Connection(object):
         try:
             msg, addr = self.ip_socket.recvfrom(1024)
         except Exception, e:
-            print
-            u'Get robot ip failed, please check the robot networking-mode and connection !'
+            print u'Get robot ip failed, please check the robot networking-mode and connection !'
         else:
             msg = msg.decode(u'utf-8')
             msg = msg[msg.find(u'robot ip ') + len(u'robot ip '):]
@@ -95,7 +94,7 @@ class Connection(object):
             elif self.connection_type is ConnectionType.USB_DIRECT:
                 self.robot_ip = Connection.USB_DIRECT_IP
             elif self.connection_type is ConnectionType.WIFI_NETWORKING:
-                if self.robot_ip == u'':
+                if self.robot_ip==u'':
                     robot_ip = self.__get_robot_ip(timeout=10)
                     if robot_ip:
                         self.robot_ip = robot_ip
@@ -133,8 +132,7 @@ class Connection(object):
         if self.cmd_socket_recv_thread.is_alive():
             self.is_shutdown = True
             self.cmd_socket_recv_thread.join()
-            print
-            u'机器人连接断开'
+            print u'机器人连接断开'
         else:
             self.is_shutdown = True
 
@@ -148,8 +146,7 @@ class Connection(object):
             try:
                 self.video_socket.connect((self.robot_ip, Connection.VIDEO_PORT))
             except Exception, e:
-                print
-                u'Connection failed in video, the reason is %s' % e
+                print u'Connection failed in video, the reason is %s' % e
                 return False
             self.cmd_socket_list.append(self.video_socket)
         return True
@@ -170,8 +167,7 @@ class Connection(object):
             try:
                 self.audio_socket.connect((self.robot_ip, Connection.AUDIO_PORT))
             except Exception, e:
-                print
-                u'Connection failed in audio, the reason is %s' % e
+                print u'Connection failed in audio, the reason is %s' % e
                 return False
             self.cmd_socket_list.append(self.audio_socket)
         return True
@@ -194,8 +190,7 @@ class Connection(object):
             try:
                 self.push_socket.bind((self.device_ip, Connection.PUSH_PORT))
             except Exception, e:
-                print
-                u'open failed in push, the reason is %s' % e
+                print u'open failed in push, the reason is %s' % e
                 return False
             self.cmd_socket_list.append(self.push_socket)
         return True
@@ -218,8 +213,7 @@ class Connection(object):
             try:
                 self.event_socket.connect((self.robot_ip, Connection.EVENT_PORT))
             except Exception, e:
-                print
-                u'subscribe failed in event, the reason is %s' % e
+                print u'subscribe failed in event, the reason is %s' % e
                 return False
             self.cmd_socket_list.append(self.event_socket)
         return True
@@ -232,25 +226,22 @@ class Connection(object):
         return True
 
     def command_on(self):
-        print
-        u'启动SDK： ',;
+        print u'启动SDK： ',
         sys.stdout.write(u'')
         seq, ret = self.__send_data(self.ctrl_socket, u'command')
-        print
-        u'成功'
+        print u'成功'
         return True
 
     def command(self, msg):
-        ctrl_command = msg.find(u'?') == -1
+        ctrl_command = msg.find(u'?')==-1
         seq, ret = self.__send_data(self.ctrl_socket, msg)
         ack = self.__wait_for_ack(seq)
         if ack is None:
-            print
-            u'.',;
+            print u'.',
             sys.stdout.write(u'')
             return self.command(msg)
         elif ctrl_command:
-            if ack == u'ok':
+            if ack==u'ok':
                 return True, ack
             else:
                 return False, ack
@@ -395,7 +386,7 @@ class Connection(object):
 
     def __unpack_protocol(self, msg):
         msg_list = list(ifilter(None, re.split(ur'( seq \d+)', msg)))
-        if len(msg_list) == 2:
+        if len(msg_list)==2:
             info = msg_list[0]
             seq = int(msg_list[1].split(u' ')[2])
             self.ack_dict[seq] = info

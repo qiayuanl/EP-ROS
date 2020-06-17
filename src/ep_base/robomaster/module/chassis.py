@@ -3,8 +3,9 @@ from __future__ import absolute_import
 
 import sys
 import threading
-import traitlets
 from enum import Enum
+
+import traitlets
 from traitlets.config.configurable import Configurable
 
 
@@ -31,36 +32,15 @@ class SubscribeData(object):
     status = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
-class Speed(Configurable):
-    x = traitlets.Float()
-    y = traitlets.Float()
-    w = traitlets.Float()
-
-    def __init__(self, connection):
-        self.connection = connection
-
-    def reset(self):
-        self.x = 0.0
-        self.y = 0.0
-        self.w = 0.0
-
-    @traitlets.observe(u'x', u'y', u'w')
-    def __observe_speed(self, change):
-        self.connection.command(u'chassis speed x %f y %f z %f'
-                                % (self.x, self.y, self.w))
-
-
 class Chassis(Configurable):
-    speed = traitlets.Instance(Speed)
+    subscribe_data = traitlets.Any()
 
     def __init__(self, connection):
         super(Chassis, self).__init__()  # initializes traitlets
-        self.speed = Speed(connection)
         self.connection = connection
-
         self.data_analysis_thread = threading.Thread(target=self.__chassis_push_analysis_task)
         self.get_push_data_ready = threading.Event()
-        self.subscribe_data = SubscribeData()
+        self.subscribe_data = None
         self.push_data = {}
         self.push_freq = 50
         self.position_on = False
@@ -72,8 +52,7 @@ class Chassis(Configurable):
 
     def subscribe_open(self, push_type=[], freq=[]):
         if len(push_type) != len(freq):
-            print
-            u"选择的推送类型与对应的频率数量不相同"
+            print u"选择的推送类型与对应的频率数量不相同"
             return
         for i in xrange(0, len(push_type)):
             if push_type[i] == RobotChassisPushAttrType.ATTITUDE:
@@ -115,12 +94,10 @@ class Chassis(Configurable):
                 attr += u' status off'
         if attr:
             self.connection.command(u'chassis push' + attr)
-        print
-        u'底盘推送:关闭'
+        print u'底盘推送:关闭'
 
     def __chassis_push_analysis_task(self):
-        print
-        u'开启底盘推送： ',;
+        print u'开启底盘推送： ',
         sys.stdout.write(u'')
         send_data = u''
         if self.position_on:
@@ -130,14 +107,14 @@ class Chassis(Configurable):
         if self.status_on:
             send_data += u' status on sfreq ' + unicode(self.status_freq)
         self.connection.command(u"chassis push" + send_data)
-        print
-        u'成功'
         self.connection.start_push_recv()
+        print u'成功'
 
         while self.status_on or self.position_on or self.attitude_on:
             buff = self.connection.recv_push_data(u'chassis')
             if buff:
                 self.get_push_data_ready.set()
+                self.subscribe_data = SubscribeData()
                 buf_list = buff.split(u' ')
                 # print(buf_list)
                 if u"position" in buf_list:

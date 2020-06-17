@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import sys
 
-ros_path = u'/opt/ros/kinetic/lib/python2.7/dist-packages'
+ros_path = u'/opt/ros/melodic/lib/python2.7/dist-packages'
 if ros_path in sys.path:
     sys.path.remove(ros_path)
 import cv2
@@ -37,8 +37,7 @@ class Camera(Configurable):
         self.height = height
         self.width = width
         if self.on:
-            print
-            u'成功连接到相机模块'
+            print u'成功连接到相机模块'
             return
         self.on = True
         self.video_decoder_thread = threading.Thread(target=self.__video_decoder_task)
@@ -51,32 +50,27 @@ class Camera(Configurable):
         if self.video_decoder_thread.is_alive():
             self.on = False
             self.video_decoder_thread.join()
-            print
-            u'相机连接断开'
+            print u'相机连接断开'
         else:
             self.on = False
 
     def save_snapshot(self, directory):
         image_path = os.path.join(directory, unicode(uuid1()) + u'.jpg')
         cv2.imwrite(image_path, self.image)
-        print
-        u'截图成功，保存至{}'.format(image_path)
+        print u'截图成功，保存至{}'.format(image_path)
 
     def __video_decoder_task(self):
         package_data = ''
-        print
-        u'连接相机模块： ',;
+        print u'连接相机模块： ',
         sys.stdout.write(u'')
         self.connection.command(u'stream on')
         if self.connection.start_video_recv():
-            print
-            u'成功'
+            print u'成功'
         else:
             self.get_image_ready.set()
             self.connection.command(u'stream off')
             self.on = False
-            print
-            u'失败'
+            print u'失败'
             return
         while self.on:
             buff = self.connection.recv_video_data()
@@ -90,14 +84,13 @@ class Camera(Configurable):
                                 self.image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
                             else:
                                 self.image = cv2.resize(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR),
-                                                        (self.width, self.height))
+                                    (self.width, self.height))
                             if not self.get_image_ready.is_set():
                                 self.get_image_ready.set()
                         except Exception, e:
                             if self.connection.is_shutdown:
                                 break
-                            print
-                            e
+                            print e
                             continue
                     package_data = ''
         self.connection.stop_video_recv()

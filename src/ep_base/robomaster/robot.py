@@ -28,19 +28,16 @@ class Robot(object):
                     u'机器人IP地址: {}\n'
                     u'当前设备IP地址: {}'
                     .format(self.connection.robot_ip, self.connection.device_ip))
-            print
-            info
+            print info
         else:
-            print
-            u'连接失败, {}'.format(ret[1])
+            print u'连接失败, {}'.format(ret[1])
             return
 
         self.camera = Camera(self.connection)
         ret = self.connection.command_on()
         self.status = Status(self.connection)
         self.status.mode = RobotModeType.FREE
-        print
-        u"机器人剩余电量: %d%%" % ((int)(self.status.get_battery_power()))
+        print u"机器人剩余电量: %d%%" % ((int)(self.status.get_battery_power()))
         self.connection.command(u'robot mode free')
         self.led = LED(self.connection)
         self.chassis = Chassis(self.connection)

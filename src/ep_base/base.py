@@ -4,22 +4,19 @@ from __future__ import absolute_import
 
 import math
 import rospkg
-import threading
-import time
-
 import rospy
 import tf
+import threading
+import time
 import yaml
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import CameraInfo
-from sensor_msgs.msg import Image
-from tf.transformations import euler_from_quaternion
-
 from robomaster import Robot
 from robomaster.connection import ConnectionType
 from robomaster.module import RobotChassisPushAttrType
 from robomaster.module import RobotModeType
+from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import Image
 
 
 class EpNode:
@@ -34,7 +31,7 @@ class EpNode:
         self.robot.status.mode = RobotModeType.FREE
         self.robot.camera.open(height=360, width=640)
         self.robot.chassis.subscribe_open([RobotChassisPushAttrType.ATTITUDE, RobotChassisPushAttrType.POSITION],
-            [chassis_freq, chassis_freq])
+                                          [chassis_freq, chassis_freq])
         self.robot.led.color = (0, 0, 0)
         self.robot.arm.reset()
         self.robot.gripper.open = True
@@ -88,10 +85,10 @@ class EpNode:
         # roll = self.robot.chassis.subscribe_data.attitude.roll / 57.3
         yaw = self.robot.chassis.subscribe_data.attitude.yaw / 57.3
         self.br.sendTransform((x, -y, 0),
-            tf.transformations.quaternion_from_euler(0, -0, -yaw),
-            rospy.Time.now(),
-            "base_link",
-            "odom")
+                              tf.transformations.quaternion_from_euler(0, -0, -yaw),
+                              rospy.Time.now(),
+                              "base_link",
+                              "odom")
 
     def move_with_wheel_speed(self, x=0.0, y=0.0, yaw=0.0):
         yaw = -yaw / 57.3
@@ -114,11 +111,11 @@ class EpNode:
             x = float(now_pos.split(u' ')[0]) / 1000
             z = float(now_pos.split(u' ')[1]) / 1000
             self.br.sendTransform((x, 0, z),
-                tf.transformations.quaternion_from_euler(0, 0, 0),
-                rospy.Time.now(),
-                "gripper", "base_link")
+                                  tf.transformations.quaternion_from_euler(0, 0, 0),
+                                  rospy.Time.now(),
+                                  "gripper", "base_link")
             time.sleep(0.1)
-        print('gripper publish threading exit')
+        print('gripper publish thread exit')
 
 
 def ep_exit():

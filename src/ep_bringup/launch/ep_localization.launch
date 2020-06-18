@@ -1,0 +1,30 @@
+<launch>
+    <!--Run apriltag_ros node -->
+    <rosparam command="load" file="$(find ep_bringup)/config/tags_settings.yaml" ns="apriltag_ros_continuous_node"/>
+    <rosparam command="load" file="$(find ep_bringup)/config/tags.yaml" ns="apriltag_ros_continuous_node"/>
+
+    <node pkg="apriltag_ros" type="apriltag_ros_continuous_node"
+          name="apriltag_ros_continuous_node" output="log"
+          clear_params="true">
+        <!-- Remap topics from those used in code to those on the ROS network -->
+        <remap from="image_rect" to="/ep_image"/>
+        <remap from="camera_info" to="/ep_camInfo"/>
+        <param name="camera_frame" type="str" value="/ep_camera_frame"/>
+        <param name="publish_tag_detections_image" type="bool" value="true"/>
+        <param name="remove_duplicates" type="bool" value="true"/>
+
+    </node>
+    <!-- Run the tags_lut node -->
+    <node name="tags_lut" pkg="ep_localization" type="tags_lut">
+        <param name="dis_tags" type="double" value="0.8"/>
+        <param name="x_tags" type="int" value="6"/>
+        <param name="y_tags" type="int" value="7"/>
+    </node>
+
+    <!-- Run the map server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find ep_bringup)/map/winter_camp.yaml"
+          respawn="false"/>
+
+
+</launch>
+

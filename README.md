@@ -1,5 +1,5 @@
 # EP-ROS
-ROS Wrapped software stack and some simple example for RoboMaster EP.
+ROS wrapper and some simple example of RoboMaster EP.
 
 Dependencies:
 - ROS Melodic

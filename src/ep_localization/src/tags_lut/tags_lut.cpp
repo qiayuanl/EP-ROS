@@ -2,7 +2,7 @@
 // Created by qiayuan on 6/18/20.
 //
 #include <tf/tf.h>
-#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf/transform_broadcaster.h>
 
 inline std::string to_string(int x) {
   std::stringstream ss;
@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
   ros::NodeHandle nh_private("~");
 
-  tf2_ros::StaticTransformBroadcaster br;
+  tf::TransformBroadcaster br;
   int x_tags, y_tags;
   double dis_tags;
   nh_private.param<std::int32_t>("x_tags", x_tags, 6);
@@ -24,6 +24,9 @@ int main(int argc, char **argv) {
 
   ros::Rate rate(10);
   while (ros::ok()) {
+    geometry_msgs::TransformStamped tf_map_tag;
+    tf_map_tag.header.frame_id = "map";
+    tf_map_tag.header.stamp = ros::Time::now();
     //Init Static Transforms
     for (int x = 0; x < x_tags; x++) {
       for (int y = 0; y < y_tags; y++) {
@@ -31,9 +34,6 @@ int main(int argc, char **argv) {
         double tag_x = dis_tags * x;
         double tag_y = -dis_tags * y;
 
-        geometry_msgs::TransformStamped tf_map_tag;
-        tf_map_tag.header.frame_id = "map";
-        tf_map_tag.header.stamp = ros::Time::now();
         tf_map_tag.child_frame_id = "tag_" + to_string(tag_id);
 
         tf_map_tag.transform.translation.x = tag_x;

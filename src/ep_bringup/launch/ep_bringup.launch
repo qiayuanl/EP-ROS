@@ -1,9 +1,10 @@
 <launch>
     <!-- Run the ep_base nodes -->
-    <include file="$(find ep_bringup)/launch/ep_base.launch" />
-
-<!--      --><!-- Run the map -->
-<!--     <include file="$(find ep_bringup)/launch/map.launch" /> -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="test" args="0.0 -0.0 0.0 0 0.0 0.0 map odom" />
+    <include file="$(find ep_bringup)/launch/ep_base.launch"/>
+    <!-- Run the ep_base nodes -->
+    <include file="$(find ep_bringup)/launch/ep_localization.launch"/>
+    <!--      --><!-- Run the map -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="test"
+          args="0.135 0.0 0.110 -1.571 0.0 -1.815 base_link ep_camera_frame"/>
 
 </launch>

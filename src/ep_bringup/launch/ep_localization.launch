@@ -21,6 +21,12 @@
         <param name="y_tags" type="int" value="7"/>
     </node>
 
+    <!-- Run the tags_localization node -->
+    <node name="tags_localization" pkg="ep_localization" type="tags_localization">
+        <param name="camera_frame" type="str" value="/ep_camera_frame"/>
+        <param name="tags_buff" type="int" value="42"/>
+    </node>
+
     <!-- Run the map server -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(find ep_bringup)/map/winter_camp.yaml"
           respawn="false"/>

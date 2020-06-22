@@ -4,19 +4,21 @@ from __future__ import absolute_import
 
 import math
 import rospkg
-import rospy
-import tf
 import threading
 import time
+
+import rospy
+import tf
 import yaml
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Twist
+from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import Image
+
 from robomaster import Robot
 from robomaster.connection import ConnectionType
 from robomaster.module import RobotChassisPushAttrType
 from robomaster.module import RobotModeType
-from sensor_msgs.msg import CameraInfo
-from sensor_msgs.msg import Image
 
 
 class EpNode:
@@ -50,6 +52,12 @@ class EpNode:
 
         self.robot.camera.observe(self.image_cb, 'image')
         self.robot.chassis.observe(self.chassis_cb, 'subscribe_data')
+        time.sleep(1)
+        self.br.sendTransform((0.1, 0, 0),
+                              tf.transformations.quaternion_from_euler(0, 0, 0),
+                              rospy.Time.now(),
+                              "odom",
+                              "map")
 
     # Camera Info Setup
     def make_camera_info(self):

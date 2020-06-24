@@ -48,7 +48,7 @@ class TagsLocalization {
   std::string camera_frame_;
 
   unsigned int tags_buffer_size_{};
-  MovingAverage<double, 3> filter_x, filter_y, filter_yaw_x, filter_yaw_y;
+  MovingAverage<double, 5> filter_x, filter_y, filter_yaw_x, filter_yaw_y;
 
   ros::Subscriber tag_sub_;
   tf::TransformListener tf_listener_;

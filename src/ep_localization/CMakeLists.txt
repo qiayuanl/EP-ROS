@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ep_localization)
 
+set(CMAKE_CXX_STANDARD 11)
+
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     tf
@@ -9,6 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
 include_directories(
     ./include
     ${catkin_INCLUDE_DIRS}
+)
+
+catkin_package(
 )
 
 #tags_lut

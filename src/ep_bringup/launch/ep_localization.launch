@@ -7,8 +7,8 @@
           name="apriltag_ros_continuous_node" output="log"
           clear_params="true">
         <!-- Remap topics from those used in code to those on the ROS network -->
-        <remap from="image_rect" to="/ep_image"/>
-        <remap from="camera_info" to="/ep_camInfo"/>
+        <remap from="image_rect" to="/ep_camera/image_raw"/>
+        <remap from="camera_info" to="/ep_camera/camera_info"/>
         <param name="camera_frame" type="str" value="/ep_camera_frame"/>
         <param name="publish_tag_detections_image" type="bool" value="true"/>
         <param name="remove_duplicates" type="bool" value="true"/>
@@ -23,7 +23,7 @@
 
     <!-- Run the tags_localization node -->
     <node name="tags_localization" pkg="ep_localization" type="tags_localization">
-        <param name="camera_frame" type="str" value="/ep_camera_frame"/>
+        <param name="camera_frame" type="str" value="/ep_camera_frame1"/>
         <param name="tags_buff" type="int" value="42"/>
     </node>
 

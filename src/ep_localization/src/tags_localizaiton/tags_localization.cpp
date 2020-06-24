@@ -26,9 +26,9 @@ void TagsLocalization::FuseDetectedTags(const apriltag_ros::AprilTagDetectionArr
   double loc_weight_sum = 0;
 
   //Lookup Base -> Cam Transform
-  tf::StampedTransform base2cam;
+  tf::StampedTransform cam2base;
   try {
-    tf_listener_.lookupTransform("base_link", camera_frame_, ros::Time(0), base2cam);
+    tf_listener_.lookupTransform(camera_frame_, "base_link", ros::Time(0), cam2base);
   }
   catch (tf::TransformException &ex) {
     ROS_ERROR("%s", ex.what());
@@ -37,27 +37,24 @@ void TagsLocalization::FuseDetectedTags(const apriltag_ros::AprilTagDetectionArr
   //Loop all detections
   for (const auto &detection : msg->detections) {
     unsigned long tag_id;
-    tf::Vector3 tag2cam_v;
-    tf::Quaternion tag2cam_q;
+    tf::Vector3 cam2tag_v;
+    tf::Quaternion cam2tag_q;
 
     tag_id = static_cast<unsigned long>(detection.id[0]);
-    tf::pointMsgToTF(detection.pose.pose.pose.position, tag2cam_v);
-    tf::quaternionMsgToTF(detection.pose.pose.pose.orientation, tag2cam_q);
+    tf::pointMsgToTF(detection.pose.pose.pose.position, cam2tag_v);
+    tf::quaternionMsgToTF(detection.pose.pose.pose.orientation, cam2tag_q);
+    tf::Transform cam2tag;
+    cam2tag.setOrigin(cam2tag_v);
+    cam2tag.setRotation(cam2tag_q);
+    //Send current tag location
+    //
+    tf_broadcaster_.sendTransform(tf::StampedTransform(cam2tag.inverse(),
+                                                       ros::Time::now(),
+                                                       "tag_" + to_string((int) tag_id),
+                                                       "cam"));
 
-    //Transform Coordinate
-    tf::Vector3 base2cam_v = base2cam.getOrigin();
-    tf::Matrix3x3 base2cam_r(base2cam.getRotation());
-    tf::Matrix3x3 tag2cam_r(tag2cam_q);
-    tf::Matrix3x3 tag2base_r = tag2cam_r * (base2cam_r.transpose());
-    tf::Vector3 tag2base_v = tag2cam_v - tag2base_r * base2cam_v;
-
-    //Tag To Base
-    tf::Quaternion tag2base_q;
     tf::Transform tag2base;
-
-    tag2base_r.getRotation(tag2base_q);
-    tag2base.setRotation(tag2base_q);
-    tag2base.setOrigin(tag2base_v);
+    tag2base = cam2tag.inverse() * cam2base;
 
     //Lookup map -> base Transform
     tf::StampedTransform map2tag;
@@ -72,7 +69,6 @@ void TagsLocalization::FuseDetectedTags(const apriltag_ros::AprilTagDetectionArr
     //Base to map
     tf::Transform map2base;
     map2base = map2tag * tag2base;
-
     //Send current tag location
     tf_broadcaster_.sendTransform(tf::StampedTransform(map2base,
                                                        ros::Time::now(),
@@ -85,9 +81,9 @@ void TagsLocalization::FuseDetectedTags(const apriltag_ros::AprilTagDetectionArr
     double cur_base_yaw = yawFromQuaternion(map2base.getRotation());
 
     //Ignore Flying base (>0.2m)
-    if (std::abs(cur_base_z) < 0.5) {
+    if (std::abs(cur_base_z) < 0.2) {
       //Calc Weight
-      double cur_Weight = 1 / tag2cam_v.length();
+      double cur_Weight = 1 / cam2tag_v.length();
 
       //Sum Up Position Estimate
       loc_x += cur_Weight * cur_base_x;
@@ -102,9 +98,10 @@ void TagsLocalization::FuseDetectedTags(const apriltag_ros::AprilTagDetectionArr
 
   //get weighted pose (map -> base)
   tf::Transform map2base;
+
   map2base.setOrigin(tf::Vector3(
       filter_x.filter(loc_x / loc_weight_sum),
-      filter_y.filter(loc_x / loc_weight_sum),
+      filter_y.filter(loc_y / loc_weight_sum),
       0
   ));
   map2base.setRotation(tf::createQuaternionFromYaw(atan2(
@@ -112,17 +109,22 @@ void TagsLocalization::FuseDetectedTags(const apriltag_ros::AprilTagDetectionArr
       filter_yaw_x.filter(loc_yaw_x / loc_weight_sum)
   )));
 
+  //Send current tag location
+  tf_broadcaster_.sendTransform(tf::StampedTransform(map2base,
+                                                     ros::Time::now(),
+                                                     "map",
+                                                     "fused_base"));
   //get base -> odom
-  tf::StampedTransform base_odom_tf;
+  tf::StampedTransform base2odom;
   try {
-    tf_listener_.lookupTransform("base_link", "odom", ros::Time(0), base_odom_tf);
+    tf_listener_.lookupTransform("base_link", "odom", ros::Time(0), base2odom);
   }
   catch (tf::TransformException &ex) {
     ROS_ERROR("%s", ex.what());
   }
 
   //set map -> odom
-  map2odom_ = map2base * base_odom_tf;
+  map2odom_ = map2base * base2odom;
 
   tf_broadcaster_.sendTransform(tf::StampedTransform(map2odom_, ros::Time::now(), "map", "odom"));
 }

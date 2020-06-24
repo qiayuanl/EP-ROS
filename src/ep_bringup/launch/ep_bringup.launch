@@ -5,6 +5,6 @@
     <include file="$(find ep_bringup)/launch/ep_localization.launch"/>
     <!--      --><!-- Run the map -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="test"
-          args="0.135 0.0 0.110 -1.571 0.0 -1.815 base_link ep_camera_frame"/>
+          args="0.03 0.0 0.285 -1.571 0.0 -1.7453 base_link ep_camera_frame"/>
 
 </launch>

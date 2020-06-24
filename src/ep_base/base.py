@@ -7,11 +7,11 @@ import rospkg
 import threading
 import time
 
+import geometry_msgs.msg
 import rospy
 import tf
 import yaml
 from cv_bridge import CvBridge
-from geometry_msgs.msg import Twist
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import Image
 
@@ -27,7 +27,7 @@ class EpNode:
         self.is_alive = True
         ip = rospy.get_param('ep_ip', '192.168.0.135')
         chassis_freq = rospy.get_param('chassis_freq', 50)
-        gripper_freq = rospy.get_param('gripper_freq', 5)
+        self.gripper_freq = rospy.get_param('gripper_freq', 10)
         # Robot hardware
         self.robot = Robot(connection_type=ConnectionType.WIFI_NETWORKING, robot_ip=ip)
         self.robot.status.mode = RobotModeType.FREE
@@ -36,14 +36,18 @@ class EpNode:
                                           [chassis_freq, chassis_freq])
         self.robot.led.color = (0, 0, 0)
         self.robot.arm.reset()
+        # self.robot.arm.x = 70
+        # self.robot.arm.y = 40
+
         self.robot.gripper.open = True
 
         # ROS pub/sub
-        self.image_pub = rospy.Publisher("/ep_image", Image, queue_size=10)
-        self.camInfo_pub = rospy.Publisher("/ep_camInfo", CameraInfo, queue_size=10, latch=True)
-        self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_cb, queue_size=1)
+        self.image_pub = rospy.Publisher("/ep_camera/image_raw", Image, queue_size=10)
+        self.camInfo_pub = rospy.Publisher("/ep_camera/camera_info", CameraInfo, queue_size=10, latch=True)
+        self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", geometry_msgs.msg.Twist, self.cmd_vel_cb, queue_size=1)
         # self.cmd_grip_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_grip_cb, queue_size=1)
         self.br = tf.TransformBroadcaster()
+        self.ls = tf.TransformListener()
         self.bridge = CvBridge()
         self.make_camera_info()
 
@@ -95,8 +99,13 @@ class EpNode:
         self.br.sendTransform((x, -y, 0),
                               tf.transformations.quaternion_from_euler(0, -0, -yaw),
                               rospy.Time.now(),
-                              "base_link",
-                              "odom")
+                              "/base_link",
+                              "/odom")
+        try:
+            (trans, rot) = self.ls.lookupTransform('/map', '/odom', rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            return
+        self.br.sendTransform(trans, rot, rospy.Time.now(), "/odom", "/map")
 
     def move_with_wheel_speed(self, x=0.0, y=0.0, yaw=0.0):
         yaw = -yaw / 57.3
@@ -122,7 +131,7 @@ class EpNode:
                                   tf.transformations.quaternion_from_euler(0, 0, 0),
                                   rospy.Time.now(),
                                   "gripper", "base_link")
-            time.sleep(0.1)
+            time.sleep(1. / self.gripper_freq)
         print('gripper publish thread exit')
 
 

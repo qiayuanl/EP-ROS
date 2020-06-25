@@ -12,6 +12,7 @@ import rospy
 import tf
 import yaml
 from cv_bridge import CvBridge
+from ep_base.msg import Gripper
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import Image
 
@@ -45,13 +46,13 @@ class EpNode:
         self.image_pub = rospy.Publisher("/ep_camera/image_raw", Image, queue_size=10)
         self.camInfo_pub = rospy.Publisher("/ep_camera/camera_info", CameraInfo, queue_size=10, latch=True)
         self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", geometry_msgs.msg.Twist, self.cmd_vel_cb, queue_size=1)
-        # self.cmd_grip_sub = rospy.Subscriber("/cmd_vel", Twist, self.cmd_grip_cb, queue_size=1)
+        self.cmd_grip_sub = rospy.Subscriber("/gripper", Gripper, self.cmd_grip_cb, queue_size=1)
         self.br = tf.TransformBroadcaster()
         self.ls = tf.TransformListener()
         self.bridge = CvBridge()
         self.make_camera_info()
 
-        self.grip_pub_thread = threading.Thread(target=self.grip_cb)
+        self.grip_pub_thread = threading.Thread(target=self.grip_pub_cb)
         self.grip_pub_thread.start()
 
         self.robot.camera.observe(self.image_cb, 'image')
@@ -122,7 +123,12 @@ class EpNode:
     def cmd_vel_cb(self, msg):
         self.move_with_wheel_speed(msg.linear.x, msg.linear.y, -msg.angular.z * 57.29578)
 
-    def grip_cb(self):
+    def cmd_grip_cb(self, msg):
+        self.robot.arm.x = msg.x
+        self.robot.arm.y = msg.z
+        self.robot.gripper.open = msg.grip
+
+    def grip_pub_cb(self):
         while self.is_alive:
             ret, now_pos = self.robot.connection.command(u'robotic_arm position ?')
             x = float(now_pos.split(u' ')[0]) / 1000
